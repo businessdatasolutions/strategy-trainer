@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>Strategy Training Support Tool</title>
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
+      crossorigin="anonymous"
+    />
+    <style>
+      body {
+        padding-top: 1rem;
+      }
+      .tab-pane {
+        padding-top: 1rem;
+      }
+      .card {
+        margin-bottom: 1rem;
+      }
+      .feedback-list {
+        margin-top: 0.5rem;
+        padding-left: 1.5rem;
+        font-size: 0.9em;
+      }
+      .feedback-item {
+        border-left: 3px solid #eee;
+        padding-left: 10px;
+        margin-bottom: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="mb-4">Navigating Strategic Choices: Support Tool</h1>
+
+      <!-- Navigation Tabs -->
+      <ul
+        class="nav nav-tabs"
+        id="strategyTabs"
+        role="tablist"
+      >
+        <li
+          class="nav-item"
+          role="presentation"
+        >
+          <button
+            class="nav-link active"
+            id="part1-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#part1"
+            type="button"
+            role="tab"
+            aria-controls="part1"
+            aria-selected="true"
+          >
+            Part 1: Intro & Analogy
+          </button>
+        </li>
+        <li
+          class="nav-item"
+          role="presentation"
+        >
+          <button
+            class="nav-link"
+            id="part2-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#part2"
+            type="button"
+            role="tab"
+            aria-controls="part2"
+            aria-selected="false"
+          >
+            Part 2: Arguments
+          </button>
+        </li>
+        <li
+          class="nav-item"
+          role="presentation"
+        >
+          <button
+            class="nav-link"
+            id="part3-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#part3"
+            type="button"
+            role="tab"
+            aria-controls="part3"
+            aria-selected="false"
+          >
+            Part 3: Debate
+          </button>
+        </li>
+        <li
+          class="nav-item"
+          role="presentation"
+        >
+          <button
+            class="nav-link"
+            id="part4-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#part4"
+            type="button"
+            role="tab"
+            aria-controls="part4"
+            aria-selected="false"
+          >
+            Part 4: Mapping & Feedback
+          </button>
+        </li>
+        <li
+          class="nav-item"
+          role="presentation"
+        >
+          <button
+            class="nav-link"
+            id="part5-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#part5"
+            type="button"
+            role="tab"
+            aria-controls="part5"
+            aria-selected="false"
+          >
+            Part 5: Reflection
+          </button>
+        </li>
+      </ul>
+
+      <!-- Tab Content -->
+      <div
+        class="tab-content"
+        id="strategyTabsContent"
+      >
+        <!-- Part 1: Introduction and Analogical Thinking -->
+        <div
+          class="tab-pane fade show active"
+          id="part1"
+          role="tabpanel"
+          aria-labelledby="part1-tab"
+        >
+          <h2>Part 1: Introduction and Analogical Thinking (15 mins)</h2>
+          <div class="card">
+            <div class="card-header">Business Challenge</div>
+            <div class="card-body">
+              <h5 class="card-title">The Challenge for "BookWise"</h5>
+              <p
+                class="card-text"
+                id="businessChallenge"
+              >
+                "BookWise, a traditional brick-and-mortar bookstore chain, is
+                facing declining sales due to the rise of online retailers and
+                e-books. They need to develop a strategy to remain relevant and
+                achieve sustainable growth in the modern book market."
+              </p>
+              <strong>Desired Outcome:</strong> Achieve sustainable growth and
+              relevance in the modern book market.
+            </div>
+          </div>
+
+          <hr />
+          <h3>Analogy Brainstorming (10 mins)</h3>
+          <p>
+            <strong>Instruction:</strong> In your groups, consider the business
+            challenge presented. Think about other companies, industries, or
+            even situations outside of business that have faced similar
+            challenges or pursued similar goals. What lessons or insights might
+            these analogies offer us for 'BookWise'? Enter your analogy and
+            reasoning below.
+          </p>
+
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Submit Your Group's Analogy</h5>
+              <div class="mb-3">
+                <label
+                  for="groupNameAnalogy"
+                  class="form-label"
+                  >Group Name (Optional)</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="groupNameAnalogy"
+                  placeholder="e.g., Group A"
+                />
+              </div>
+              <div class="mb-3">
+                <label
+                  for="analogyInput"
+                  class="form-label"
+                  >Chosen Analogy</label
+                >
+                <textarea
+                  class="form-control"
+                  id="analogyInput"
+                  rows="2"
+                  placeholder="e.g., Blockbuster vs Netflix, Vinyl Records Resurgence, Community Libraries"
+                ></textarea>
+              </div>
+              <div class="mb-3">
+                <label
+                  for="reasoningInput"
+                  class="form-label"
+                  >Reasoning & Relevance</label
+                >
+                <textarea
+                  class="form-control"
+                  id="reasoningInput"
+                  rows="3"
+                  placeholder="Explain why this analogy is relevant and what insights it offers for BookWise..."
+                ></textarea>
+              </div>
+              <button
+                type="button"
+                class="btn btn-primary"
+                onclick="submitAnalogy()"
+              >
+                Submit Analogy
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Part 2: Developing Initial Strategy Arguments -->
+        <div
+          class="tab-pane fade"
+          id="part2"
+          role="tabpanel"
+          aria-labelledby="part2-tab"
+        >
+          <h2>Part 2: Developing Initial Strategy Arguments (30 mins)</h2>
+          <p>
+            <strong>Instruction:</strong> Share your analogy and initial
+            argument thoughts inspired by it. What key actions or approaches
+            might be applicable? What's the logic?
+          </p>
+
+          <h3>Shared Analogies & Initial Arguments</h3>
+          <div
+            id="analogyList"
+            class="row"
+          >
+            <!-- Submitted analogies will appear here -->
+            <p class="text-muted">
+              Analogies submitted in Part 1 will be displayed here.
+            </p>
+          </div>
+
+          <hr />
+          <h3>Key Themes & Contrasting Ideas</h3>
+          <p>
+            As groups share, note down common themes and potential points of
+            conflict or different strategic directions arising from the various
+            analogies.
+          </p>
+          <div class="mb-3">
+            <label
+              for="themesInput"
+              class="form-label"
+              >Facilitator Notes: Key Themes / Contrasting Ideas</label
+            >
+            <textarea
+              class="form-control"
+              id="themesInput"
+              rows="5"
+              placeholder="e.g., Theme 1: Focus on Experience (like vinyl), Theme 2: Digital Integration (like libraries), Conflict: Physical vs Digital focus..."
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Part 3: Focused Debate and Strategy Mapping Intro -->
+        <div
+          class="tab-pane fade"
+          id="part3"
+          role="tabpanel"
+          aria-labelledby="part3-tab"
+        >
+          <h2>Part 3: Focused Debate & Strategy Mapping (35 mins)</h2>
+
+          <h3>Structuring the Debate (10 mins)</h3>
+          <p>
+            Based on the themes identified, define 2-3 distinct potential
+            strategic directions for the debate.
+          </p>
+          <div class="mb-3">
+            <label
+              for="debateDirections"
+              class="form-label"
+              >Potential Strategic Directions for Debate</label
+            >
+            <textarea
+              class="form-control"
+              id="debateDirections"
+              rows="4"
+              placeholder="Enter the 2-3 distinct directions here. e.g., 1. Reinvent as Experiential Community Hub. 2. Hybrid Model: Strong Online Presence + Curated Stores. 3. Niche Specialization (rare books, specific genres)."
+            ></textarea>
+          </div>
+          <p>
+            <strong>Instruction:</strong> Your group will advocate for one
+            direction. Consider its strengths, assumptions, and logic. Be
+            prepared to present and respond. Devil's advocates will challenge
+            assumptions.
+          </p>
+          <p>
+            <strong>Rules of Engagement:</strong> Focus on constructive debate,
+            logical reasoning, and respectful disagreement.
+          </p>
+
+          <hr />
+          <h3>Focused Debate (20 mins)</h3>
+          <p>
+            Conduct the debate. Use the space below for shared notes if desired.
+          </p>
+          <div class="mb-3">
+            <label
+              for="debateNotes"
+              class="form-label"
+              >Shared Debate Notes / Key Arguments</label
+            >
+            <textarea
+              class="form-control"
+              id="debateNotes"
+              rows="6"
+              placeholder="Capture key points, arguments, counter-arguments, and challenges raised during the debate..."
+            ></textarea>
+          </div>
+
+          <hr />
+          <h3>Transition to Strategy Mapping (5 mins)</h3>
+          <p>
+            Choose one strategic direction (or a hybrid) emerging from the
+            debate.
+          </p>
+          <div class="mb-3">
+            <label
+              for="chosenStrategy"
+              class="form-label"
+              >Chosen Strategic Direction for Mapping</label
+            >
+            <input
+              type="text"
+              class="form-control"
+              id="chosenStrategy"
+              placeholder="Enter the strategy chosen for mapping"
+            />
+          </div>
+          <p>
+            <strong>Introduction to Strategy Mapping:</strong> Strategy mapping
+            visually represents the causal links within a strategy. It helps
+            understand the 'how' and 'why'. We will map the key elements:
+            Desired Outcome -> Key Actions -> Resources/Capabilities ->
+            Connections.
+          </p>
+        </div>
+
+        <!-- Part 4: Collaborative Strategy Mapping and Open Feedback -->
+        <div
+          class="tab-pane fade"
+          id="part4"
+          role="tabpanel"
+          aria-labelledby="part4-tab"
+        >
+          <h2>
+            Part 4: Collaborative Strategy Mapping & Open Feedback (35 mins)
+          </h2>
+          <p>
+            <strong>Instruction:</strong> In your groups, create a strategy map
+            for the chosen direction. Describe its components below. Start with
+            the desired outcome and work backwards, identifying key actions,
+            resources, and the causal links between them.
+          </p>
+
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">
+                Submit Your Group's Strategy Map Description
+              </h5>
+              <div class="mb-3">
+                <label
+                  for="groupNameMap"
+                  class="form-label"
+                  >Group Name (Optional)</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="groupNameMap"
+                  placeholder="e.g., Group B"
+                />
+              </div>
+              <div class="mb-3">
+                <label
+                  for="mapStrategyDirection"
+                  class="form-label"
+                  >Strategy Direction Mapped</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="mapStrategyDirection"
+                  placeholder="Confirm the direction being mapped (e.g., Experiential Hub)"
+                />
+              </div>
+              <div class="mb-3">
+                <label
+                  for="mapOutcome"
+                  class="form-label"
+                  >Desired Outcome</label
+                >
+                <textarea
+                  class="form-control"
+                  id="mapOutcome"
+                  rows="1"
+                  placeholder="Clearly state the ultimate goal (e.g., Sustainable Growth & Relevance)"
+                ></textarea>
+              </div>
+              <div class="mb-3">
+                <label
+                  for="mapCustomerPerspective"
+                  class="form-label"
+                  >Customer Perspective / Value Proposition</label
+                >
+                <textarea
+                  class="form-control"
+                  id="mapCustomerPerspective"
+                  rows="2"
+                  placeholder="What value do you offer customers? (e.g., Unique community experience, curated selection)"
+                ></textarea>
+              </div>
+              <div class="mb-3">
+                <label
+                  for="mapInternalProcesses"
+                  class="form-label"
+                  >Key Internal Processes / Actions</label
+                >
+                <textarea
+                  class="form-control"
+                  id="mapInternalProcesses"
+                  rows="3"
+                  placeholder="What key activities must be done? (e.g., Host events, curate local authors, integrate online/offline inventory)"
+                ></textarea>
+              </div>
+              <div class="mb-3">
+                <label
+                  for="mapLearningGrowth"
+                  class="form-label"
+                  >Learning & Growth / Resources & Capabilities</label
+                >
+                <textarea
+                  class="form-control"
+                  id="mapLearningGrowth"
+                  rows="3"
+                  placeholder="What skills, resources, tech are needed? (e.g., Staff training in event mgmt, CRM system, partnerships)"
+                ></textarea>
+              </div>
+              <div class="mb-3">
+                <label
+                  for="mapCausalLinks"
+                  class="form-label"
+                  >Causal Links / Logic Summary</label
+                >
+                <textarea
+                  class="form-control"
+                  id="mapCausalLinks"
+                  rows="3"
+                  placeholder="Briefly explain the 'theory' - how do these elements connect to achieve the outcome? (e.g., Trained staff run better events -> improved customer experience -> increased loyalty/traffic -> growth)"
+                ></textarea>
+              </div>
+              <button
+                type="button"
+                class="btn btn-primary"
+                onclick="submitStrategyMap()"
+              >
+                Submit Map Description
+              </button>
+            </div>
+          </div>
+
+          <hr />
+          <h3>Submitted Strategy Maps & Open Feedback (10 mins)</h3>
+          <p>
+            Review the submitted map descriptions. Offer constructive feedback
+            and identify potential gaps or alternative connections.
+          </p>
+          <div
+            id="strategyMapList"
+            class="row"
+          >
+            <!-- Submitted maps will appear here -->
+            <p class="text-muted">
+              Strategy map descriptions submitted above will be displayed here
+              for feedback.
+            </p>
+          </div>
+        </div>
+
+        <!-- Part 5: Wrap-up and Reflection -->
+        <div
+          class="tab-pane fade"
+          id="part5"
+          role="tabpanel"
+          aria-labelledby="part5-tab"
+        >
+          <h2>Part 5: Wrap-up and Reflection (5 mins)</h2>
+          <p>
+            Reflect on the exercise. What did you learn about the different
+            approaches to strategy development (argumentation, visualization,
+            diverse input, learning from analogies)? How is strategy a dynamic
+            process?
+          </p>
+          <div class="mb-3">
+            <label
+              for="reflectionInput"
+              class="form-label"
+              >Individual or Group Reflections</label
+            >
+            <textarea
+              class="form-control"
+              id="reflectionInput"
+              rows="7"
+              placeholder="Enter key takeaways, learnings, or reflections from the exercise..."
+            ></textarea>
+          </div>
+          <!-- Optional: Button to 'submit' reflection locally if needed, but often just a discussion prompt -->
+        </div>
+      </div>
+      <!-- end tab-content -->
+    </div>
+    <!-- end container -->
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+      crossorigin="anonymous"
+    ></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+      // Simple in-memory storage for the session
+      let analogies = [];
+      let strategyMaps = [];
+      let mapCounter = 0; // Simple ID for maps
+
+      // --- Part 1: Analogy Submission ---
+      function submitAnalogy() {
+        const groupName =
+          document.getElementById("groupNameAnalogy").value || "Anonymous";
+        const analogy = document.getElementById("analogyInput").value.trim();
+        const reasoning = document
+          .getElementById("reasoningInput")
+          .value.trim();
+
+        if (!analogy || !reasoning) {
+          alert("Please enter both the analogy and the reasoning.");
+          return;
+        }
+
+        const newAnalogy = {
+          id: Date.now(), // Simple unique ID
+          groupName,
+          analogy,
+          reasoning,
+        };
+
+        analogies.push(newAnalogy);
+        displayAnalogies();
+
+        // Clear the form
+        document.getElementById("groupNameAnalogy").value = "";
+        document.getElementById("analogyInput").value = "";
+        document.getElementById("reasoningInput").value = "";
+
+        // Optional: Switch to Part 2 tab automatically
+        // const part2Tab = new bootstrap.Tab(document.getElementById('part2-tab'));
+        // part2Tab.show();
+        alert("Analogy submitted!");
+      }
+
+      // --- Part 2: Display Analogies ---
+      function displayAnalogies() {
+        const listElement = document.getElementById("analogyList");
+        listElement.innerHTML = ""; // Clear previous list
+
+        if (analogies.length === 0) {
+          listElement.innerHTML =
+            '<p class="text-muted">No analogies submitted yet. Submit them in Part 1.</p>';
+          return;
+        }
+
+        analogies.forEach((item) => {
+          const col = document.createElement("div");
+          col.className = "col-md-6 col-lg-4 mb-3"; // Responsive grid column
+
+          const card = document.createElement("div");
+          card.className = "card h-100"; // Use h-100 for equal height cards in a row
+
+          const cardBody = document.createElement("div");
+          cardBody.className = "card-body";
+
+          const title = document.createElement("h5");
+          title.className = "card-title";
+          title.textContent = item.analogy;
+
+          const group = document.createElement("h6");
+          group.className = "card-subtitle mb-2 text-muted";
+          group.textContent = `From: ${item.groupName}`;
+
+          const text = document.createElement("p");
+          text.className = "card-text";
+          text.textContent = item.reasoning;
+
+          cardBody.appendChild(title);
+          cardBody.appendChild(group);
+          cardBody.appendChild(text);
+          card.appendChild(cardBody);
+          col.appendChild(card);
+          listElement.appendChild(col);
+        });
+      }
+
+      // --- Part 3: Update Chosen Strategy ---
+      // Automatically update the mapping section's strategy direction when changed in Part 3
+      const chosenStrategyInput = document.getElementById("chosenStrategy");
+      if (chosenStrategyInput) {
+        chosenStrategyInput.addEventListener("input", (event) => {
+          const mapStrategyDirectionInput = document.getElementById(
+            "mapStrategyDirection"
+          );
+          if (mapStrategyDirectionInput) {
+            mapStrategyDirectionInput.value = event.target.value;
+          }
+        });
+      }
+
+      // --- Part 4: Strategy Map Submission ---
+      function submitStrategyMap() {
+        const groupName =
+          document.getElementById("groupNameMap").value || "Anonymous Map";
+        const direction = document
+          .getElementById("mapStrategyDirection")
+          .value.trim();
+        const outcome = document.getElementById("mapOutcome").value.trim();
+        const customer = document
+          .getElementById("mapCustomerPerspective")
+          .value.trim();
+        const internal = document
+          .getElementById("mapInternalProcesses")
+          .value.trim();
+        const learning = document
+          .getElementById("mapLearningGrowth")
+          .value.trim();
+        const logic = document.getElementById("mapCausalLinks").value.trim();
+
+        if (
+          !direction ||
+          !outcome ||
+          !customer ||
+          !internal ||
+          !learning ||
+          !logic
+        ) {
+          alert("Please fill in all fields for the strategy map description.");
+          return;
+        }
+
+        mapCounter++;
+        const newMap = {
+          id: mapCounter,
+          groupName,
+          direction,
+          outcome,
+          customer,
+          internal,
+          learning,
+          logic,
+          feedback: [], // Array to hold feedback comments
+        };
+
+        strategyMaps.push(newMap);
+        displayStrategyMaps();
+
+        // Clear the form
+        document.getElementById("groupNameMap").value = "";
+        // Keep direction pre-filled based on Part 3 if desired
+        // document.getElementById('mapStrategyDirection').value = '';
+        document.getElementById("mapOutcome").value = "";
+        document.getElementById("mapCustomerPerspective").value = "";
+        document.getElementById("mapInternalProcesses").value = "";
+        document.getElementById("mapLearningGrowth").value = "";
+        document.getElementById("mapCausalLinks").value = "";
+
+        alert("Strategy map description submitted!");
+      }
+
+      // --- Part 4: Display Strategy Maps ---
+      function displayStrategyMaps() {
+        const listElement = document.getElementById("strategyMapList");
+        listElement.innerHTML = ""; // Clear previous list
+
+        if (strategyMaps.length === 0) {
+          listElement.innerHTML =
+            '<p class="text-muted">No strategy map descriptions submitted yet.</p>';
+          return;
+        }
+
+        strategyMaps.forEach((map) => {
+          const col = document.createElement("div");
+          col.className = "col-md-6 mb-3"; // Grid column
+
+          const card = document.createElement("div");
+          card.className = "card";
+          card.id = `map-card-${map.id}`; // Unique ID for the card
+
+          const cardBody = document.createElement("div");
+          cardBody.className = "card-body";
+
+          const title = document.createElement("h5");
+          title.className = "card-title";
+          title.textContent = `Map: ${map.direction}`;
+
+          const group = document.createElement("h6");
+          group.className = "card-subtitle mb-2 text-muted";
+          group.textContent = `From: ${map.groupName}`;
+
+          // Add map details
+          cardBody.innerHTML += `
+                    ${title.outerHTML}
+                    ${group.outerHTML}
+                    <p><strong>Outcome:</strong> ${map.outcome}</p>
+                    <p><strong>Customer Perspective:</strong> ${
+                      map.customer
+                    }</p>
+                    <p><strong>Internal Processes:</strong> ${map.internal}</p>
+                    <p><strong>Learning & Growth:</strong> ${map.learning}</p>
+                    <p><strong>Logic/Links:</strong> ${map.logic}</p>
+                    <hr>
+                    <h6>Feedback:</h6>
+                    <div class="feedback-list" id="feedback-list-${map.id}">
+                        ${
+                          map.feedback.length > 0
+                            ? map.feedback
+                                .map(
+                                  (f) => `<div class="feedback-item">${f}</div>`
+                                )
+                                .join("")
+                            : '<p class="text-muted small">No feedback yet.</p>'
+                        }
+                    </div>
+                    <div class="input-group mt-2">
+                        <input type="text" class="form-control form-control-sm" placeholder="Add feedback..." id="feedback-input-${
+                          map.id
+                        }">
+                        <button class="btn btn-outline-secondary btn-sm" type="button" onclick="addFeedback(${
+                          map.id
+                        })">Add</button>
+                    </div>
+                `;
+
+          card.appendChild(cardBody);
+          col.appendChild(card);
+          listElement.appendChild(col);
+        });
+      }
+
+      // --- Part 4: Add Feedback ---
+      function addFeedback(mapId) {
+        const inputElement = document.getElementById(`feedback-input-${mapId}`);
+        const feedbackText = inputElement.value.trim();
+
+        if (!feedbackText) {
+          alert("Please enter feedback.");
+          return;
+        }
+
+        // Find the map in our storage
+        const map = strategyMaps.find((m) => m.id === mapId);
+        if (map) {
+          map.feedback.push(feedbackText);
+
+          // Update the display for this specific map's feedback
+          const feedbackListElement = document.getElementById(
+            `feedback-list-${mapId}`
+          );
+          if (feedbackListElement) {
+            // Clear "No feedback yet" message if it exists
+            const noFeedbackMsg =
+              feedbackListElement.querySelector(".text-muted");
+            if (noFeedbackMsg) noFeedbackMsg.remove();
+
+            const feedbackItem = document.createElement("div");
+            feedbackItem.className = "feedback-item";
+            feedbackItem.textContent = feedbackText;
+            feedbackListElement.appendChild(feedbackItem);
+          }
+
+          // Clear the input field
+          inputElement.value = "";
+        } else {
+          console.error("Map not found for ID:", mapId);
+        }
+      }
+
+      // --- Initial setup ---
+      // Add event listener to refresh displays when tabs are shown
+      const tabs = document.querySelectorAll(
+        '#strategyTabs button[data-bs-toggle="tab"]'
+      );
+      tabs.forEach((tab) => {
+        tab.addEventListener("shown.bs.tab", (event) => {
+          const targetTabId = event.target.getAttribute("data-bs-target");
+          if (targetTabId === "#part2") {
+            displayAnalogies(); // Refresh analogy list when Part 2 is shown
+          } else if (targetTabId === "#part4") {
+            // Pre-fill chosen strategy if available
+            const chosenStrategy =
+              document.getElementById("chosenStrategy").value;
+            const mapStrategyDirectionInput = document.getElementById(
+              "mapStrategyDirection"
+            );
+            if (
+              mapStrategyDirectionInput &&
+              chosenStrategy &&
+              !mapStrategyDirectionInput.value
+            ) {
+              mapStrategyDirectionInput.value = chosenStrategy;
+            }
+            displayStrategyMaps(); // Refresh map list when Part 4 is shown
+          }
+          // Add other refreshes if needed for other tabs
+        });
+      });
+
+      // Initial display call for any data that might be pre-loaded or persists if modified
+      displayAnalogies();
+      displayStrategyMaps();
+    </script>
+  </body>
+</html>
