@@ -14,9 +14,16 @@
       integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
       crossorigin="anonymous"
     />
+    <!-- jsPDF library for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <!-- Mermaid.js for diagrams -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
     <style>
       body {
         padding-top: 1rem;
+        padding-bottom: 80px; /* Add padding to bottom to avoid overlap with export button */
       }
       .tab-pane {
         padding-top: 1rem;
@@ -28,17 +35,139 @@
         margin-top: 0.5rem;
         padding-left: 1.5rem;
         font-size: 0.9em;
+        max-height: 150px; /* Limit feedback height */
+        overflow-y: auto; /* Add scroll if needed */
       }
       .feedback-item {
         border-left: 3px solid #eee;
         padding-left: 10px;
         margin-bottom: 5px;
       }
+      .export-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000;
+      }
+      .mermaid-container {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        margin-top: 15px;
+        margin-bottom: 15px;
+        overflow-x: auto; /* Allow horizontal scroll for large diagrams */
+      }
+      .diagram-editor {
+        width: 100%;
+        min-height: 150px;
+        font-family: monospace;
+        font-size: 0.9em;
+        padding: 10px;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        margin-bottom: 10px;
+      }
+      @media print {
+        .export-btn,
+        .nav-tabs,
+        #loadExampleContainer {
+          /* Hide load example section in print */
+          display: none !important;
+        }
+        .tab-pane {
+          display: block !important;
+          opacity: 1 !important;
+          visibility: visible !important;
+        }
+        .card {
+          page-break-inside: avoid;
+        }
+        .mermaid-container {
+          page-break-inside: avoid;
+        }
+        h2,
+        h3,
+        h4,
+        h5 {
+          page-break-after: avoid;
+        }
+        p,
+        li,
+        td,
+        th {
+          page-break-inside: avoid;
+        }
+      }
+      /* Style for loading modal */
+      #loadingModalContainer .modal-backdrop {
+        background-color: rgba(0, 0, 0, 0.5);
+      }
     </style>
   </head>
   <body>
     <div class="container">
       <h1 class="mb-4">Navigating Strategic Choices: Support Tool</h1>
+
+      <!-- Load Example Section -->
+      <div
+        class="mb-3 border p-3 rounded bg-light"
+        id="loadExampleContainer"
+      >
+        <label
+          for="loadExampleSelect"
+          class="form-label fw-bold"
+          >Load Example Case:</label
+        >
+        <div class="input-group">
+          <select
+            class="form-select"
+            id="loadExampleSelect"
+            aria-label="Select example to load"
+          >
+            <option
+              selected
+              disabled
+              value=""
+            >
+              Select an example...
+            </option>
+            <!-- Options will be populated by JavaScript -->
+          </select>
+          <button
+            class="btn btn-outline-secondary"
+            type="button"
+            id="loadExampleBtn"
+          >
+            Load Example
+          </button>
+        </div>
+        <div class="form-text">
+          Loading an example will clear any current unsaved data in the tool.
+        </div>
+      </div>
+
+      <!-- Export Button (Fixed position) -->
+      <button
+        id="exportBtn"
+        class="btn btn-success export-btn"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          fill="currentColor"
+          class="bi bi-file-earmark-pdf"
+          viewBox="0 0 16 16"
+        >
+          <path
+            d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 3A1.5 1.5 0 0 0 11 4.5V7h1V4.5a2.5 2.5 0 0 0-2.5-2.5H4z"
+          />
+          <path
+            d="M4.603 12.137a.5.5 0 0 1-.497.461c-.3.046-.73.105-1.118.176a.5.5 0 0 1-.105-.984c.388-.071.787-.13 1.085-.173.171-.026.342-.053.51-.081a.5.5 0 0 1 .497.461zM3 10.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5m1.5 3.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5m1.5-2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5m1.5 2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5m1.5-2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5"
+          />
+        </svg>
+        Export as PDF
+      </button>
 
       <!-- Navigation Tabs -->
       <ul
@@ -147,20 +276,32 @@
         >
           <h2>Part 1: Introduction and Analogical Thinking (15 mins)</h2>
           <div class="card">
-            <div class="card-header">Business Challenge</div>
+            <!-- MODIFIED: Added IDs here -->
+            <div
+              class="card-header"
+              id="businessChallengeCompany"
+            >
+              Business Challenge
+            </div>
             <div class="card-body">
-              <h5 class="card-title">The Challenge for "BookWise"</h5>
+              <h5
+                class="card-title"
+                id="businessChallengeTitle"
+              >
+                The Challenge for "BookWise"
+              </h5>
               <p
                 class="card-text"
-                id="businessChallenge"
+                id="businessChallengeText"
               >
                 "BookWise, a traditional brick-and-mortar bookstore chain, is
                 facing declining sales due to the rise of online retailers and
                 e-books. They need to develop a strategy to remain relevant and
                 achieve sustainable growth in the modern book market."
               </p>
-              <strong>Desired Outcome:</strong> Achieve sustainable growth and
-              relevance in the modern book market.
+              <strong id="businessChallengeOutcome">Desired Outcome:</strong>
+              Achieve sustainable growth and relevance in the modern book
+              market.
             </div>
           </div>
 
@@ -171,8 +312,7 @@
             challenge presented. Think about other companies, industries, or
             even situations outside of business that have faced similar
             challenges or pursued similar goals. What lessons or insights might
-            these analogies offer us for 'BookWise'? Enter your analogy and
-            reasoning below.
+            these analogies offer us? Enter your analogy and reasoning below.
           </p>
 
           <div class="card">
@@ -214,7 +354,7 @@
                   class="form-control"
                   id="reasoningInput"
                   rows="3"
-                  placeholder="Explain why this analogy is relevant and what insights it offers for BookWise..."
+                  placeholder="Explain why this analogy is relevant and what insights it offers..."
                 ></textarea>
               </div>
               <button
@@ -245,7 +385,7 @@
           <h3>Shared Analogies & Initial Arguments</h3>
           <div
             id="analogyList"
-            class="row"
+            class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4"
           >
             <!-- Submitted analogies will appear here -->
             <p class="text-muted">
@@ -374,13 +514,14 @@
             <strong>Instruction:</strong> In your groups, create a strategy map
             for the chosen direction. Describe its components below. Start with
             the desired outcome and work backwards, identifying key actions,
-            resources, and the causal links between them.
+            resources, and the causal links between them. Use the visual builder
+            to create a diagram.
           </p>
 
           <div class="card">
             <div class="card-body">
               <h5 class="card-title">
-                Submit Your Group's Strategy Map Description
+                Create or Edit Strategy Map Description
               </h5>
               <div class="mb-3">
                 <label
@@ -412,7 +553,7 @@
                 <label
                   for="mapOutcome"
                   class="form-label"
-                  >Desired Outcome</label
+                  >Desired Outcome (Financial/Overall Goal)</label
                 >
                 <textarea
                   class="form-control"
@@ -431,7 +572,7 @@
                   class="form-control"
                   id="mapCustomerPerspective"
                   rows="2"
-                  placeholder="What value do you offer customers? (e.g., Unique community experience, curated selection)"
+                  placeholder="What value must we offer customers to achieve the outcome? (e.g., Unique community experience, curated selection)"
                 ></textarea>
               </div>
               <div class="mb-3">
@@ -444,7 +585,7 @@
                   class="form-control"
                   id="mapInternalProcesses"
                   rows="3"
-                  placeholder="What key activities must be done? (e.g., Host events, curate local authors, integrate online/offline inventory)"
+                  placeholder="What key activities must we excel at? (e.g., Host events, curate local authors, integrate online/offline inventory)"
                 ></textarea>
               </div>
               <div class="mb-3">
@@ -457,14 +598,14 @@
                   class="form-control"
                   id="mapLearningGrowth"
                   rows="3"
-                  placeholder="What skills, resources, tech are needed? (e.g., Staff training in event mgmt, CRM system, partnerships)"
+                  placeholder="What skills, resources, culture, tech are needed? (e.g., Staff training in event mgmt, CRM system, partnerships)"
                 ></textarea>
               </div>
               <div class="mb-3">
                 <label
                   for="mapCausalLinks"
                   class="form-label"
-                  >Causal Links / Logic Summary</label
+                  >Causal Links / Logic Summary (Optional Text)</label
                 >
                 <textarea
                   class="form-control"
@@ -473,12 +614,74 @@
                   placeholder="Briefly explain the 'theory' - how do these elements connect to achieve the outcome? (e.g., Trained staff run better events -> improved customer experience -> increased loyalty/traffic -> growth)"
                 ></textarea>
               </div>
+
+              <!-- Visual Strategy Map Builder -->
+              <div class="mb-3 border p-3 rounded">
+                <label class="form-label fw-bold"
+                  >Visual Strategy Map Diagram</label
+                >
+                <p class="text-muted small">
+                  Use this visual diagram builder (powered by Mermaid.js) to
+                  create your strategy map. The diagram will automatically
+                  update as you edit the code below. Links show causality (A -->
+                  B means A causes/enables B).
+                </p>
+
+                <div class="mb-2">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-secondary"
+                    onclick="insertTemplate()"
+                  >
+                    Insert Template
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-secondary"
+                    onclick="generateFromFields()"
+                  >
+                    Generate From Text Fields
+                  </button>
+                  <a
+                    href="https://mermaid.js.org/syntax/flowchart.html"
+                    target="_blank"
+                    class="btn btn-sm btn-link float-end"
+                    >Mermaid Syntax Help</a
+                  >
+                </div>
+
+                <textarea
+                  class="diagram-editor"
+                  id="mermaidCode"
+                  rows="12"
+                  placeholder="Edit your diagram code here. Click 'Insert Template' for a starting point or 'Generate From Text Fields' to create a basic structure based on your text entries above."
+                  oninput="updateDiagram()"
+                ></textarea>
+
+                <div class="mermaid-container">
+                  <div
+                    class="mermaid"
+                    id="strategyDiagram"
+                  >
+                    graph TD; A["Start editing diagram code above<br />or use
+                    buttons to generate."];
+                  </div>
+                </div>
+              </div>
+
               <button
                 type="button"
                 class="btn btn-primary"
                 onclick="submitStrategyMap()"
               >
-                Submit Map Description
+                Submit Map
+              </button>
+              <button
+                type="button"
+                class="btn btn-outline-secondary ms-2"
+                onclick="clearMapForm()"
+              >
+                Clear Form
               </button>
             </div>
           </div>
@@ -486,12 +689,14 @@
           <hr />
           <h3>Submitted Strategy Maps & Open Feedback (10 mins)</h3>
           <p>
-            Review the submitted map descriptions. Offer constructive feedback
-            and identify potential gaps or alternative connections.
+            Review the submitted strategy maps below. Offer constructive
+            feedback and identify potential gaps or alternative connections.
+            Does the map visually represent the strategy? Are the causal links
+            logical?
           </p>
           <div
             id="strategyMapList"
-            class="row"
+            class="row row-cols-1 row-cols-lg-2 g-4"
           >
             <!-- Submitted maps will appear here -->
             <p class="text-muted">
@@ -535,6 +740,14 @@
     </div>
     <!-- end container -->
 
+    <!-- PDF Export Content Container (hidden) -->
+    <div
+      id="pdfContent"
+      style="display: none; padding: 20px; background-color: white"
+    >
+      <!-- Content will be dynamically added here -->
+    </div>
+
     <!-- Bootstrap Bundle with Popper -->
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
@@ -548,17 +761,33 @@
       let analogies = [];
       let strategyMaps = [];
       let mapCounter = 0; // Simple ID for maps
+      let loadedExamples = []; // <--- ADDED: To store loaded example data
+
+      // Initialize Mermaid
+      mermaid.initialize({
+        startOnLoad: true,
+        theme: "neutral", // or "default", "forest", "dark", "neutral"
+        flowchart: {
+          useMaxWidth: false, // Allow diagrams to take needed width
+          htmlLabels: true,
+          curve: "basis",
+        },
+        // Security level adjusted for flexibility with HTML labels if needed
+        // securityLevel: 'loose', // Use with caution if embedding external content
+      });
 
       // --- Part 1: Analogy Submission ---
       function submitAnalogy() {
         const groupName =
           document.getElementById("groupNameAnalogy").value || "Anonymous";
-        const analogy = document.getElementById("analogyInput").value.trim();
+        const analogyText = document
+          .getElementById("analogyInput")
+          .value.trim();
         const reasoning = document
           .getElementById("reasoningInput")
           .value.trim();
 
-        if (!analogy || !reasoning) {
+        if (!analogyText || !reasoning) {
           alert("Please enter both the analogy and the reasoning.");
           return;
         }
@@ -566,7 +795,7 @@
         const newAnalogy = {
           id: Date.now(), // Simple unique ID
           groupName,
-          analogy,
+          analogy: analogyText, // Renamed from analogy to analogyText to avoid conflict
           reasoning,
         };
 
@@ -591,30 +820,30 @@
 
         if (analogies.length === 0) {
           listElement.innerHTML =
-            '<p class="text-muted">No analogies submitted yet. Submit them in Part 1.</p>';
+            '<p class="text-muted col-12">No analogies submitted yet. Submit them in Part 1 or load an example.</p>';
           return;
         }
 
         analogies.forEach((item) => {
           const col = document.createElement("div");
-          col.className = "col-md-6 col-lg-4 mb-3"; // Responsive grid column
+          col.className = "col"; // Let Bootstrap's row-cols handle width
 
           const card = document.createElement("div");
-          card.className = "card h-100"; // Use h-100 for equal height cards in a row
+          card.className = "card h-100"; // Use h-100 for equal height cards
 
           const cardBody = document.createElement("div");
-          cardBody.className = "card-body";
+          cardBody.className = "card-body d-flex flex-column"; // Use flex for footer alignment if needed
 
           const title = document.createElement("h5");
           title.className = "card-title";
-          title.textContent = item.analogy;
+          title.textContent = item.analogy; // Use item.analogy here
 
           const group = document.createElement("h6");
           group.className = "card-subtitle mb-2 text-muted";
           group.textContent = `From: ${item.groupName}`;
 
           const text = document.createElement("p");
-          text.className = "card-text";
+          text.className = "card-text flex-grow-1"; // Allow text to grow
           text.textContent = item.reasoning;
 
           cardBody.appendChild(title);
@@ -640,6 +869,155 @@
         });
       }
 
+      // --- Visual Strategy Map Functions ---
+      function updateDiagram() {
+        try {
+          const code = document.getElementById("mermaidCode").value;
+          const diagramElement = document.getElementById("strategyDiagram");
+          diagramElement.innerHTML = code; // Update the content
+          diagramElement.removeAttribute("data-processed"); // Allow Mermaid to reprocess
+
+          // Use Mermaid API to render the specific element
+          mermaid.run({
+            nodes: [diagramElement],
+          });
+        } catch (error) {
+          console.error("Error updating diagram:", error);
+          // Mermaid often shows errors directly in the diagram placeholder
+        }
+      }
+
+      function clearMapForm() {
+        document.getElementById("groupNameMap").value = "";
+        document.getElementById("mapStrategyDirection").value =
+          document.getElementById("chosenStrategy").value || ""; // Keep sync with Part 3
+        document.getElementById("mapOutcome").value = "";
+        document.getElementById("mapCustomerPerspective").value = "";
+        document.getElementById("mapInternalProcesses").value = "";
+        document.getElementById("mapLearningGrowth").value = "";
+        document.getElementById("mapCausalLinks").value = "";
+        document.getElementById("mermaidCode").value = "";
+        const diagramElement = document.getElementById("strategyDiagram");
+        diagramElement.innerHTML = 'graph TD;\n   A["Form cleared."];'; // Reset diagram view
+        diagramElement.removeAttribute("data-processed");
+        mermaid.run({ nodes: [diagramElement] });
+      }
+
+      function insertTemplate() {
+        const template = `graph TD
+            subgraph "Financial/Outcome"
+                O1["Desired Outcome:\\nSustainable Growth & Relevance"];
+            end
+            subgraph "Customer Perspective"
+                C1["Value Proposition 1\\n(e.g., Unique Experience)"];
+                C2["Value Proposition 2\\n(e.g., Curated Selection)"];
+            end
+            subgraph "Internal Processes"
+                IP1["Key Process 1\\n(e.g., Host Events)"];
+                IP2["Key Process 2\\n(e.g., Integrate Inventory)"];
+            end
+            subgraph "Learning & Growth"
+                LG1["Resource/Capability 1\\n(e.g., Staff Training)"];
+                LG2["Resource/Capability 2\\n(e.g., CRM System)"];
+            end
+
+            LG1 --> IP1;
+            LG2 --> IP2;
+            IP1 --> C1;
+            IP2 --> C2;
+            C1 --> O1;
+            C2 --> O1;`;
+
+        document.getElementById("mermaidCode").value = template;
+        updateDiagram();
+      }
+
+      function generateFromFields() {
+        const outcome =
+          document.getElementById("mapOutcome").value.trim() || "Outcome";
+        const customer = document
+          .getElementById("mapCustomerPerspective")
+          .value.trim();
+        const internal = document
+          .getElementById("mapInternalProcesses")
+          .value.trim();
+        const learning = document
+          .getElementById("mapLearningGrowth")
+          .value.trim();
+
+        // Function to sanitize text for Mermaid node IDs and labels
+        const sanitize = (text, prefix) => {
+          const cleanText = text.replace(/[^a-zA-Z0-9\s]/g, "").trim(); // Remove special chars except space
+          const id = prefix + cleanText.replace(/\s+/g, "").substring(0, 15); // Create ID
+          const label = text.replace(/"/g, "#quot;").replace(/\n/g, "<br>"); // Escape quotes, use <br> for newlines
+          return { id, label };
+        };
+
+        // Process text to create nodes, handling multiple lines/items
+        const createNodes = (text, prefix) => {
+          return text
+            .split(/[\n,;]+/)
+            .filter((i) => i.trim())
+            .map((item, idx) => sanitize(item.trim(), prefix + idx));
+        };
+
+        const outcomeNode = sanitize(outcome, "O");
+        const customerNodes = createNodes(customer, "C");
+        const internalNodes = createNodes(internal, "IP");
+        const learningNodes = createNodes(learning, "LG");
+
+        let code = `graph TD
+            subgraph "Financial/Outcome"
+                ${outcomeNode.id}["${outcomeNode.label}"];
+            end\n`;
+
+        if (customerNodes.length > 0) {
+          code += `    subgraph "Customer Perspective"\n`;
+          customerNodes.forEach((node) => {
+            code += `        ${node.id}["${node.label}"];\n`;
+          });
+          code += `    end\n`;
+        }
+        if (internalNodes.length > 0) {
+          code += `    subgraph "Internal Processes"\n`;
+          internalNodes.forEach((node) => {
+            code += `        ${node.id}["${node.label}"];\n`;
+          });
+          code += `    end\n`;
+        }
+        if (learningNodes.length > 0) {
+          code += `    subgraph "Learning & Growth"\n`;
+          learningNodes.forEach((node) => {
+            code += `        ${node.id}["${node.label}"];\n`;
+          });
+          code += `    end\n`;
+        }
+
+        // Add basic causal links (can be customized further)
+        if (learningNodes.length > 0 && internalNodes.length > 0) {
+          learningNodes.forEach((ln) => {
+            internalNodes.forEach((ip) => {
+              code += `    ${ln.id} --> ${ip.id};\n`;
+            });
+          });
+        }
+        if (internalNodes.length > 0 && customerNodes.length > 0) {
+          internalNodes.forEach((ip) => {
+            customerNodes.forEach((cn) => {
+              code += `    ${ip.id} --> ${cn.id};\n`;
+            });
+          });
+        }
+        if (customerNodes.length > 0) {
+          customerNodes.forEach((cn) => {
+            code += `    ${cn.id} --> ${outcomeNode.id};\n`;
+          });
+        }
+
+        document.getElementById("mermaidCode").value = code;
+        updateDiagram();
+      }
+
       // --- Part 4: Strategy Map Submission ---
       function submitStrategyMap() {
         const groupName =
@@ -658,6 +1036,7 @@
           .getElementById("mapLearningGrowth")
           .value.trim();
         const logic = document.getElementById("mapCausalLinks").value.trim();
+        const diagramCode = document.getElementById("mermaidCode").value.trim();
 
         if (
           !direction ||
@@ -665,15 +1044,17 @@
           !customer ||
           !internal ||
           !learning ||
-          !logic
+          !diagramCode // Require diagram code now
         ) {
-          alert("Please fill in all fields for the strategy map description.");
+          alert(
+            "Please fill in all strategy map description fields (Outcome, Customer, Internal, Learning) and ensure the diagram code is present."
+          );
           return;
         }
 
         mapCounter++;
         const newMap = {
-          id: mapCounter,
+          id: mapCounter, // Use incrementing counter
           groupName,
           direction,
           outcome,
@@ -681,23 +1062,17 @@
           internal,
           learning,
           logic,
+          diagramCode, // Store the diagram code
           feedback: [], // Array to hold feedback comments
         };
 
         strategyMaps.push(newMap);
         displayStrategyMaps();
 
-        // Clear the form
-        document.getElementById("groupNameMap").value = "";
-        // Keep direction pre-filled based on Part 3 if desired
-        // document.getElementById('mapStrategyDirection').value = '';
-        document.getElementById("mapOutcome").value = "";
-        document.getElementById("mapCustomerPerspective").value = "";
-        document.getElementById("mapInternalProcesses").value = "";
-        document.getElementById("mapLearningGrowth").value = "";
-        document.getElementById("mapCausalLinks").value = "";
+        // Clear the form AFTER submission
+        clearMapForm();
 
-        alert("Strategy map description submitted!");
+        alert("Strategy map submitted!");
       }
 
       // --- Part 4: Display Strategy Maps ---
@@ -707,16 +1082,16 @@
 
         if (strategyMaps.length === 0) {
           listElement.innerHTML =
-            '<p class="text-muted">No strategy map descriptions submitted yet.</p>';
+            '<p class="text-muted col-12">No strategy maps submitted yet. Use the form above or load an example.</p>';
           return;
         }
 
         strategyMaps.forEach((map) => {
           const col = document.createElement("div");
-          col.className = "col-md-6 mb-3"; // Grid column
+          col.className = "col"; // Let Bootstrap row-cols handle it
 
           const card = document.createElement("div");
-          card.className = "card";
+          card.className = "card h-100";
           card.id = `map-card-${map.id}`; // Unique ID for the card
 
           const cardBody = document.createElement("div");
@@ -728,46 +1103,115 @@
 
           const group = document.createElement("h6");
           group.className = "card-subtitle mb-2 text-muted";
-          group.textContent = `From: ${map.groupName}`;
+          group.textContent = `From: ${map.groupName} (ID: ${map.id})`; // Show ID for reference
 
-          // Add map details
-          cardBody.innerHTML += `
-                    ${title.outerHTML}
-                    ${group.outerHTML}
-                    <p><strong>Outcome:</strong> ${map.outcome}</p>
-                    <p><strong>Customer Perspective:</strong> ${
-                      map.customer
-                    }</p>
-                    <p><strong>Internal Processes:</strong> ${map.internal}</p>
-                    <p><strong>Learning & Growth:</strong> ${map.learning}</p>
-                    <p><strong>Logic/Links:</strong> ${map.logic}</p>
-                    <hr>
-                    <h6>Feedback:</h6>
-                    <div class="feedback-list" id="feedback-list-${map.id}">
-                        ${
-                          map.feedback.length > 0
-                            ? map.feedback
-                                .map(
-                                  (f) => `<div class="feedback-item">${f}</div>`
-                                )
-                                .join("")
-                            : '<p class="text-muted small">No feedback yet.</p>'
-                        }
-                    </div>
-                    <div class="input-group mt-2">
-                        <input type="text" class="form-control form-control-sm" placeholder="Add feedback..." id="feedback-input-${
-                          map.id
-                        }">
-                        <button class="btn btn-outline-secondary btn-sm" type="button" onclick="addFeedback(${
-                          map.id
-                        })">Add</button>
-                    </div>
-                `;
+          // Add map text details (collapsible)
+          const detailsId = `map-details-${map.id}`;
+          const detailsCollapse = document.createElement("div");
+          detailsCollapse.innerHTML = `
+                        <p>
+                            <button class="btn btn-sm btn-outline-info" type="button" data-bs-toggle="collapse" data-bs-target="#${detailsId}" aria-expanded="false" aria-controls="${detailsId}">
+                                Show/Hide Text Details
+                            </button>
+                        </p>
+                        <div class="collapse" id="${detailsId}">
+                            <p class="card-text small"><strong>Outcome:</strong> ${
+                              map.outcome
+                            }</p>
+                            <p class="card-text small"><strong>Customer Perspective:</strong> ${
+                              map.customer
+                            }</p>
+                            <p class="card-text small"><strong>Internal Processes:</strong> ${
+                              map.internal
+                            }</p>
+                            <p class="card-text small"><strong>Learning & Growth:</strong> ${
+                              map.learning
+                            }</p>
+                            ${
+                              map.logic
+                                ? `<p class="card-text small"><strong>Logic/Links:</strong> ${map.logic}</p>`
+                                : ""
+                            }
+                        </div>
+                    `;
+
+          cardBody.appendChild(title);
+          cardBody.appendChild(group);
+          cardBody.appendChild(detailsCollapse); // Add collapsible details
+
+          // Add visual diagram if available
+          if (map.diagramCode && map.diagramCode.trim()) {
+            const diagramContainer = document.createElement("div");
+            diagramContainer.className = "mermaid-container mt-3";
+            diagramContainer.style.maxHeight = "400px"; // Limit height in card
+            diagramContainer.style.overflow = "auto"; // Add scroll
+
+            const diagramDiv = document.createElement("div");
+            diagramDiv.className = "mermaid";
+            diagramDiv.id = `map-diagram-${map.id}`; // Unique ID for rendering
+            diagramDiv.innerHTML = map.diagramCode; // Set content
+
+            diagramContainer.appendChild(diagramDiv);
+            cardBody.appendChild(diagramContainer);
+
+            // Use Mermaid API to render this specific diagram after it's added to DOM
+            setTimeout(() => {
+              const nodeToRender = document.getElementById(
+                `map-diagram-${map.id}`
+              );
+              if (nodeToRender) {
+                nodeToRender.removeAttribute("data-processed");
+                mermaid.run({ nodes: [nodeToRender] });
+              }
+            }, 100); // Short delay to ensure DOM update
+          }
+
+          // Add feedback section
+          const feedbackSection = document.createElement("div");
+          feedbackSection.className = "mt-3";
+          feedbackSection.innerHTML = `
+                            <h6>Feedback:</h6>
+                            <div class="feedback-list" id="feedback-list-${
+                              map.id
+                            }">
+                                ${
+                                  map.feedback.length > 0
+                                    ? map.feedback
+                                        .map(
+                                          (f) =>
+                                            `<div class="feedback-item">${escapeHtml(
+                                              f
+                                            )}</div>` // Sanitize feedback
+                                        )
+                                        .join("")
+                                    : '<p class="text-muted small mb-0">No feedback yet.</p>'
+                                }
+                            </div>
+                            <div class="input-group input-group-sm mt-2">
+                                <input type="text" class="form-control" placeholder="Add feedback..." id="feedback-input-${
+                                  map.id
+                                }" aria-label="Add feedback">
+                                <button class="btn btn-outline-secondary" type="button" onclick="addFeedback(${
+                                  map.id
+                                })">Add</button>
+                            </div>
+                        `;
+          cardBody.appendChild(feedbackSection);
 
           card.appendChild(cardBody);
           col.appendChild(card);
           listElement.appendChild(col);
         });
+      }
+
+      // Helper function to escape HTML for display
+      function escapeHtml(unsafe) {
+        if (!unsafe) return "";
+        return unsafe
+          .replace(/&/g, "&")
+          .replace(/</g, "<")
+          .replace(/>/g, ">")
+          .replace(/'/g, "'");
       }
 
       // --- Part 4: Add Feedback ---
@@ -776,13 +1220,18 @@
         const feedbackText = inputElement.value.trim();
 
         if (!feedbackText) {
-          alert("Please enter feedback.");
+          // Optionally show a small message instead of alert
+          inputElement.placeholder = "Please enter feedback first!";
+          setTimeout(() => {
+            inputElement.placeholder = "Add feedback...";
+          }, 2000);
           return;
         }
 
         // Find the map in our storage
         const map = strategyMaps.find((m) => m.id === mapId);
         if (map) {
+          // Sanitize before pushing? Or just on display. Let's sanitize on display.
           map.feedback.push(feedbackText);
 
           // Update the display for this specific map's feedback
@@ -797,15 +1246,814 @@
 
             const feedbackItem = document.createElement("div");
             feedbackItem.className = "feedback-item";
-            feedbackItem.textContent = feedbackText;
+            feedbackItem.textContent = feedbackText; // Display raw text, escaping handled in displayStrategyMaps
             feedbackListElement.appendChild(feedbackItem);
+
+            // Scroll to the bottom of the feedback list
+            feedbackListElement.scrollTop = feedbackListElement.scrollHeight;
           }
 
           // Clear the input field
           inputElement.value = "";
+          inputElement.placeholder = "Add feedback..."; // Reset placeholder
         } else {
           console.error("Map not found for ID:", mapId);
+          alert("Error: Could not find the map to add feedback.");
         }
+      }
+
+      // --- Export to PDF functionality ---
+      document
+        .getElementById("exportBtn")
+        .addEventListener("click", function () {
+          generatePDF();
+        });
+
+      async function generatePDF() {
+        const { jsPDF } = window.jspdf;
+        const pdfDoc = new jsPDF({
+          orientation: "p",
+          unit: "mm",
+          format: "a4",
+          putOnlyUsedFonts: true,
+          floatPrecision: 16, // Default
+        });
+        const contentContainer = document.getElementById("pdfContent");
+        let verticalPosition = 15; // Start position top margin in mm
+        const leftMargin = 15;
+        const usableWidth =
+          pdfDoc.internal.pageSize.getWidth() - leftMargin * 2;
+        const pageHeight = pdfDoc.internal.pageSize.getHeight();
+        const bottomMargin = 15;
+
+        // Show loading indicator
+        showLoadingModal("Generating PDF, please wait...");
+
+        // --- Helper function to add text and manage page breaks ---
+        const addText = (text, options, doc, currentY) => {
+          const defaultOptions = {
+            fontSize: 10,
+            style: "normal",
+            maxWidth: usableWidth,
+            x: leftMargin,
+          };
+          const mergedOptions = { ...defaultOptions, ...options };
+
+          doc.setFontSize(mergedOptions.fontSize);
+          doc.setFont(undefined, mergedOptions.style); // Set font style (normal, bold, italic)
+
+          const splitText = doc.splitTextToSize(text, mergedOptions.maxWidth);
+          const textHeight = doc.getTextDimensions(splitText).h;
+
+          if (currentY + textHeight > pageHeight - bottomMargin) {
+            doc.addPage();
+            currentY = 15; // Reset Y for new page
+          }
+
+          doc.text(splitText, mergedOptions.x, currentY, {
+            maxWidth: mergedOptions.maxWidth,
+          });
+          return currentY + textHeight + (mergedOptions.spacing || 2); // Add spacing after text
+        };
+
+        // --- Helper function to add Mermaid diagrams ---
+        const addMermaidDiagram = async (mermaidCode, doc, currentY) => {
+          if (!mermaidCode || !mermaidCode.trim()) return currentY;
+
+          const tempDiv = document.createElement("div");
+          tempDiv.style.position = "absolute";
+          tempDiv.style.left = "-9999px"; // Position off-screen
+          tempDiv.style.width = "800px"; // Provide ample width for rendering
+          tempDiv.style.backgroundColor = "white"; // Ensure background for capture
+
+          const mermaidDiv = document.createElement("div");
+          mermaidDiv.className = "mermaid";
+          mermaidDiv.innerHTML = mermaidCode;
+          tempDiv.appendChild(mermaidDiv);
+          document.body.appendChild(tempDiv);
+
+          try {
+            // Ensure Mermaid processes it
+            mermaidDiv.removeAttribute("data-processed");
+            await mermaid.run({ nodes: [mermaidDiv] });
+
+            // Wait briefly for rendering to settle
+            await new Promise((resolve) => setTimeout(resolve, 300));
+
+            // Find the SVG element generated by Mermaid
+            const svgElement = mermaidDiv.querySelector("svg");
+            if (!svgElement) {
+              console.warn(
+                "Mermaid SVG element not found for code:",
+                mermaidCode
+              );
+              document.body.removeChild(tempDiv);
+              return currentY;
+            }
+
+            // Use html2canvas to capture the specific SVG container
+            const canvas = await html2canvas(svgElement.parentNode, {
+              // Capture parent to get background/padding potentially
+              scale: 2, // Improve resolution
+              logging: false,
+              useCORS: true,
+              backgroundColor: "#ffffff", // Explicit white background
+            });
+
+            const imgData = canvas.toDataURL("image/png");
+            const canvasWidth = canvas.width;
+            const canvasHeight = canvas.height;
+            let imgWidth = usableWidth;
+            let imgHeight = (canvasHeight * imgWidth) / canvasWidth;
+            const maxHeight = pageHeight - bottomMargin - currentY - 5; // Max height available on current page
+
+            if (imgHeight > maxHeight) {
+              // If it doesn't fit, check if it fits on a new page
+              if (imgHeight <= pageHeight - bottomMargin - 15) {
+                doc.addPage();
+                currentY = 15; // Reset Y
+              } else {
+                // If it's still too tall even for a full page, scale it down
+                imgHeight = pageHeight - bottomMargin - 15;
+                imgWidth = (canvasWidth * imgHeight) / canvasHeight;
+                if (currentY + imgHeight > pageHeight - bottomMargin) {
+                  // Double check after scaling
+                  doc.addPage();
+                  currentY = 15;
+                }
+              }
+            } else if (currentY + imgHeight > pageHeight - bottomMargin) {
+              doc.addPage();
+              currentY = 15; // Reset Y
+            }
+
+            doc.addImage(
+              imgData,
+              "PNG",
+              leftMargin,
+              currentY,
+              imgWidth,
+              imgHeight
+            );
+            currentY += imgHeight + 5; // Add spacing after image
+          } catch (error) {
+            console.error(
+              "Error rendering or adding Mermaid diagram to PDF:",
+              error
+            );
+            currentY = addText(
+              `[Error rendering diagram: ${error.message}]`,
+              { fontSize: 8, style: "italic" },
+              doc,
+              currentY
+            );
+          } finally {
+            // Clean up the temporary div
+            if (document.body.contains(tempDiv)) {
+              document.body.removeChild(tempDiv);
+            }
+          }
+          return currentY;
+        };
+
+        // --- Start Building PDF ---
+        verticalPosition = addText(
+          "Strategy Training Exercise: Report",
+          { fontSize: 18, style: "bold", spacing: 5 },
+          pdfDoc,
+          verticalPosition
+        );
+        verticalPosition = addText(
+          `Generated on: ${new Date().toLocaleDateString()}`,
+          { fontSize: 10, style: "italic", spacing: 10 },
+          pdfDoc,
+          verticalPosition
+        );
+
+        // Add Business Challenge
+        verticalPosition = addText(
+          "Business Challenge",
+          { fontSize: 14, style: "bold", spacing: 3 },
+          pdfDoc,
+          verticalPosition
+        );
+        verticalPosition = addText(
+          document.getElementById("businessChallengeTitle")?.textContent ||
+            "N/A",
+          { fontSize: 12, style: "bold", spacing: 2 },
+          pdfDoc,
+          verticalPosition
+        );
+        verticalPosition = addText(
+          document.getElementById("businessChallengeText")?.textContent ||
+            "N/A",
+          { fontSize: 10, spacing: 2 },
+          pdfDoc,
+          verticalPosition
+        );
+        verticalPosition = addText(
+          document.getElementById("businessChallengeOutcome")?.innerText ||
+            "N/A",
+          { fontSize: 10, style: "bold", spacing: 8 },
+          pdfDoc,
+          verticalPosition
+        );
+
+        // Add Analogies
+        verticalPosition = addText(
+          "Team Analogies",
+          { fontSize: 14, style: "bold", spacing: 5 },
+          pdfDoc,
+          verticalPosition
+        );
+        if (analogies.length > 0) {
+          analogies.forEach((a) => {
+            verticalPosition = addText(
+              `${a.analogy} (from ${a.groupName})`,
+              { fontSize: 11, style: "bold", spacing: 1 },
+              pdfDoc,
+              verticalPosition
+            );
+            verticalPosition = addText(
+              `Reasoning: ${a.reasoning}`,
+              { fontSize: 10, spacing: 4 },
+              pdfDoc,
+              verticalPosition
+            );
+          });
+        } else {
+          verticalPosition = addText(
+            "No analogies submitted.",
+            { fontSize: 10, style: "italic", spacing: 4 },
+            pdfDoc,
+            verticalPosition
+          );
+        }
+        verticalPosition += 5; // Extra space before next section
+
+        // Add Key Themes
+        verticalPosition = addText(
+          "Key Themes & Contrasting Ideas",
+          { fontSize: 14, style: "bold", spacing: 3 },
+          pdfDoc,
+          verticalPosition
+        );
+        const themes =
+          document.getElementById("themesInput").value || "No themes entered.";
+        verticalPosition = addText(
+          themes,
+          { fontSize: 10, spacing: 8 },
+          pdfDoc,
+          verticalPosition
+        );
+
+        // Add Debate Info
+        verticalPosition = addText(
+          "Debate Information",
+          { fontSize: 14, style: "bold", spacing: 3 },
+          pdfDoc,
+          verticalPosition
+        );
+        verticalPosition = addText(
+          "Potential Strategic Directions:",
+          { fontSize: 11, style: "bold", spacing: 1 },
+          pdfDoc,
+          verticalPosition
+        );
+        verticalPosition = addText(
+          document.getElementById("debateDirections").value || "N/A",
+          { fontSize: 10, spacing: 4 },
+          pdfDoc,
+          verticalPosition
+        );
+        verticalPosition = addText(
+          "Debate Notes:",
+          { fontSize: 11, style: "bold", spacing: 1 },
+          pdfDoc,
+          verticalPosition
+        );
+        verticalPosition = addText(
+          document.getElementById("debateNotes").value || "N/A",
+          { fontSize: 10, spacing: 4 },
+          pdfDoc,
+          verticalPosition
+        );
+        verticalPosition = addText(
+          "Chosen Strategy for Mapping:",
+          { fontSize: 11, style: "bold", spacing: 1 },
+          pdfDoc,
+          verticalPosition
+        );
+        verticalPosition = addText(
+          document.getElementById("chosenStrategy").value || "N/A",
+          { fontSize: 10, spacing: 8 },
+          pdfDoc,
+          verticalPosition
+        );
+
+        // Add Strategy Maps
+        verticalPosition = addText(
+          "Strategy Maps",
+          { fontSize: 14, style: "bold", spacing: 5 },
+          pdfDoc,
+          verticalPosition
+        );
+        if (strategyMaps.length > 0) {
+          for (const map of strategyMaps) {
+            // Check for page break before starting a new map section
+            const estimatedMapHeight = 100 + (map.diagramCode ? 100 : 0); // Rough estimate
+            if (
+              verticalPosition + estimatedMapHeight >
+                pageHeight - bottomMargin &&
+              verticalPosition > 15
+            ) {
+              pdfDoc.addPage();
+              verticalPosition = 15;
+            }
+
+            verticalPosition = addText(
+              `Map: ${map.direction} (by ${map.groupName})`,
+              { fontSize: 12, style: "bold", spacing: 3 },
+              pdfDoc,
+              verticalPosition
+            );
+            verticalPosition = addText(
+              `Outcome: ${map.outcome}`,
+              { fontSize: 10, spacing: 1 },
+              pdfDoc,
+              verticalPosition
+            );
+            verticalPosition = addText(
+              `Customer: ${map.customer}`,
+              { fontSize: 10, spacing: 1 },
+              pdfDoc,
+              verticalPosition
+            );
+            verticalPosition = addText(
+              `Internal: ${map.internal}`,
+              { fontSize: 10, spacing: 1 },
+              pdfDoc,
+              verticalPosition
+            );
+            verticalPosition = addText(
+              `Learning: ${map.learning}`,
+              { fontSize: 10, spacing: 1 },
+              pdfDoc,
+              verticalPosition
+            );
+            if (map.logic)
+              verticalPosition = addText(
+                `Logic: ${map.logic}`,
+                { fontSize: 10, spacing: 3 },
+                pdfDoc,
+                verticalPosition
+              );
+
+            // Add the Mermaid diagram
+            verticalPosition = await addMermaidDiagram(
+              map.diagramCode,
+              pdfDoc,
+              verticalPosition
+            );
+            verticalPosition += 2; // Spacing after diagram
+
+            // Add Feedback
+            verticalPosition = addText(
+              "Feedback:",
+              { fontSize: 10, style: "bold", spacing: 1 },
+              pdfDoc,
+              verticalPosition
+            );
+            if (map.feedback.length > 0) {
+              map.feedback.forEach((f) => {
+                verticalPosition = addText(
+                  `- ${f}`,
+                  { fontSize: 9, spacing: 1 },
+                  pdfDoc,
+                  verticalPosition
+                );
+              });
+            } else {
+              verticalPosition = addText(
+                "No feedback received.",
+                { fontSize: 9, style: "italic", spacing: 1 },
+                pdfDoc,
+                verticalPosition
+              );
+            }
+            verticalPosition += 8; // Space before next map or section
+          }
+        } else {
+          verticalPosition = addText(
+            "No strategy maps submitted.",
+            { fontSize: 10, style: "italic", spacing: 4 },
+            pdfDoc,
+            verticalPosition
+          );
+        }
+
+        // Add Reflections
+        verticalPosition = addText(
+          "Reflections",
+          { fontSize: 14, style: "bold", spacing: 3 },
+          pdfDoc,
+          verticalPosition
+        );
+        const reflections =
+          document.getElementById("reflectionInput").value ||
+          "No reflections entered.";
+        verticalPosition = addText(
+          reflections,
+          { fontSize: 10, spacing: 4 },
+          pdfDoc,
+          verticalPosition
+        );
+
+        // --- Save PDF ---
+        pdfDoc.save("Strategy_Tool_Report.pdf");
+        hideLoadingModal();
+      }
+
+      // Loading modal functions (no changes needed from your provided code)
+      function showLoadingModal(message) {
+        // Prevent creating multiple modals
+        if (document.getElementById("loadingModalContainer")) return;
+
+        const modalHtml = `
+                  <div class="modal-backdrop fade show" id="loadingBackdrop" style="z-index: 1060;"></div>
+                  <div class="modal fade show" id="loadingModal" tabindex="-1" style="display: block; z-index: 1061;" aria-modal="true" role="dialog">
+                    <div class="modal-dialog modal-dialog-centered">
+                      <div class="modal-content">
+                        <div class="modal-body text-center p-4">
+                          <div class="spinner-border text-primary mb-3" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                          </div>
+                          <p class="mb-0">${message || "Loading..."}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                `;
+
+        const modalContainer = document.createElement("div");
+        modalContainer.id = "loadingModalContainer";
+        modalContainer.innerHTML = modalHtml;
+        document.body.appendChild(modalContainer);
+        document.body.classList.add("modal-open"); // Prevent background scroll
+        document.body.style.overflow = "hidden";
+      }
+
+      function hideLoadingModal() {
+        const modalContainer = document.getElementById("loadingModalContainer");
+        if (modalContainer) {
+          modalContainer.remove(); // Use remove() directly
+        }
+        document.body.classList.remove("modal-open");
+        document.body.style.overflow = ""; // Restore scroll
+      }
+
+      // Replace your existing loadAndPopulateExamples function with this one
+      async function loadAndPopulateExamples() {
+        const selectElement = document.getElementById("loadExampleSelect");
+        const buttonElement = document.getElementById("loadExampleBtn");
+        const loadingContainerElement = document.getElementById(
+          "loadExampleContainer"
+        );
+
+        // Add a status message area to the container
+        let statusElement = document.getElementById("exampleLoadStatus");
+        if (!statusElement) {
+          statusElement = document.createElement("div");
+          statusElement.id = "exampleLoadStatus";
+          statusElement.className = "mt-2 small";
+          loadingContainerElement.appendChild(statusElement);
+        }
+
+        // Update status
+        statusElement.innerHTML =
+          '<span class="text-info">Attempting to load examples...</span>';
+
+        try {
+          // Log attempt to console
+          console.log("Fetch attempt starting for examples.json");
+
+          // Check if elements exist
+          if (!selectElement) {
+            throw new Error(
+              "Could not find select element with ID 'loadExampleSelect'"
+            );
+          }
+          if (!buttonElement) {
+            throw new Error(
+              "Could not find button element with ID 'loadExampleBtn'"
+            );
+          }
+
+          // First try the regular path
+          let response;
+          try {
+            console.log("Trying to fetch from standard path: examples.json");
+            response = await fetch("examples.json");
+            console.log("Fetch response status:", response.status);
+          } catch (fetchError) {
+            console.error("First fetch attempt failed:", fetchError);
+            statusElement.innerHTML =
+              '<span class="text-warning">First attempt failed, trying alternate paths...</span>';
+
+            // Try alternate paths
+            try {
+              console.log("Trying alternate path: ./examples.json");
+              response = await fetch("./examples.json");
+              console.log(
+                "Alternate path fetch response status:",
+                response.status
+              );
+            } catch (altFetchError) {
+              console.error("Alternate path fetch failed:", altFetchError);
+              throw new Error(
+                `Fetch failed for both paths: ${fetchError.message} AND ${altFetchError.message}`
+              );
+            }
+          }
+
+          if (!response.ok) {
+            throw new Error(
+              `HTTP error! Status: ${
+                response.status
+              }, Text: ${await response.text()}`
+            );
+          }
+
+          // Try to parse JSON
+          statusElement.innerHTML =
+            '<span class="text-info">File found, parsing JSON...</span>';
+          let jsonText;
+          try {
+            jsonText = await response.text(); // Get raw text first for debugging
+            console.log(
+              "JSON text received, first 100 chars:",
+              jsonText.substring(0, 100) + "..."
+            );
+
+            loadedExamples = JSON.parse(jsonText);
+            console.log(
+              "JSON parsed successfully, found",
+              loadedExamples.length,
+              "examples"
+            );
+          } catch (parseError) {
+            console.error("JSON parse error:", parseError);
+            console.error("Problematic JSON text:", jsonText);
+            throw new Error(`Failed to parse JSON: ${parseError.message}`);
+          }
+
+          if (
+            !loadedExamples ||
+            !Array.isArray(loadedExamples) ||
+            loadedExamples.length === 0
+          ) {
+            throw new Error("Examples data is empty or not in expected format");
+          }
+
+          // Clear existing options except the placeholder
+          selectElement.options.length = 1;
+
+          // Add the examples
+          loadedExamples.forEach((example, index) => {
+            const option = document.createElement("option");
+            option.value = index;
+            option.textContent = example.name || `Example ${index + 1}`;
+            selectElement.appendChild(option);
+          });
+
+          // Enable controls
+          selectElement.disabled = false;
+          buttonElement.disabled = false;
+
+          // Add event listener to the load button
+          buttonElement.removeEventListener("click", handleLoadExampleClick); // Remove any existing
+          buttonElement.addEventListener("click", handleLoadExampleClick);
+
+          // Update status
+          statusElement.innerHTML =
+            '<span class="text-success">Successfully loaded ' +
+            loadedExamples.length +
+            " examples!</span>";
+          console.log("Examples loaded successfully");
+        } catch (error) {
+          // Handle specific errors with helpful messages
+          console.error("Error loading examples:", error);
+          selectElement.disabled = true;
+          buttonElement.disabled = true;
+
+          // Clear existing options except the placeholder
+          selectElement.options.length = 1;
+
+          // Add error option
+          const errorOption = document.createElement("option");
+          errorOption.textContent = "Error loading examples";
+          errorOption.disabled = true;
+          selectElement.appendChild(errorOption);
+          selectElement.selectedIndex = 1; // Show the error message
+
+          // Provide detailed error information
+          statusElement.innerHTML =
+            '<span class="text-danger">Error: ' + error.message + "</span>";
+
+          // Add troubleshooting advice
+          const troubleshootDiv = document.createElement("div");
+          troubleshootDiv.className =
+            "mt-2 p-2 border border-warning small bg-light";
+          troubleshootDiv.innerHTML = `
+                <p><strong>Troubleshooting steps:</strong></p>
+                <ol>
+                    <li>Check that examples.json exists in the same folder as this HTML file</li>
+                    <li>Verify the JSON syntax is valid (use a JSON validator)</li>
+                    <li>Try serving the files from a web server instead of local file system</li>
+                    <li>Check browser console (F12) for additional error details</li>
+                    <li>If using Chrome, try Firefox or Edge as they have different CORS policies</li>
+                </ol>
+            `;
+          loadingContainerElement.appendChild(troubleshootDiv);
+        }
+      }
+
+      function handleLoadExampleClick() {
+        const selectElement = document.getElementById("loadExampleSelect");
+        const selectedIndex = selectElement.value;
+        if (selectedIndex !== "" && loadedExamples[selectedIndex]) {
+          // Confirm before overwriting
+          if (
+            confirm(
+              "Loading an example will clear all current unsaved data. Are you sure?"
+            )
+          ) {
+            loadExampleData(parseInt(selectedIndex)); // Parse index to integer
+          }
+        } else {
+          alert("Please select a valid example to load.");
+        }
+      }
+
+      // --- Load Example Data Function ---
+      function loadExampleData(exampleIndex) {
+        const example = loadedExamples[exampleIndex];
+        if (!example || !example.data) {
+          console.error("Invalid example data structure.");
+          alert(
+            "Error: Could not load the selected example data. Structure might be invalid."
+          );
+          return;
+        }
+        console.log(`Loading example: ${example.name}`);
+        showLoadingModal(`Loading "${example.name}"...`);
+        const data = example.data;
+
+        // 1. Reset current state
+        analogies = [];
+        strategyMaps = [];
+        mapCounter = 0; // Reset map counter
+
+        // Clear input fields and display areas
+        document.getElementById("groupNameAnalogy").value = "";
+        document.getElementById("analogyInput").value = "";
+        document.getElementById("reasoningInput").value = "";
+        document.getElementById("analogyList").innerHTML =
+          '<p class="text-muted col-12">Analogies will appear here.</p>';
+
+        document.getElementById("themesInput").value = "";
+
+        document.getElementById("debateDirections").value = "";
+        document.getElementById("debateNotes").value = "";
+        document.getElementById("chosenStrategy").value = "";
+
+        // Clear map form (using existing function)
+        clearMapForm();
+
+        document.getElementById("strategyMapList").innerHTML =
+          '<p class="text-muted col-12">Strategy maps will appear here.</p>';
+
+        document.getElementById("reflectionInput").value = "";
+
+        // 2. Populate Part 1: Business Challenge & Analogies
+        if (data.part1) {
+          if (data.part1.businessChallenge) {
+            const bc = data.part1.businessChallenge;
+            const companyName = bc.company || "Selected Case";
+            document.getElementById(
+              "businessChallengeCompany"
+            ).textContent = `Business Challenge: ${companyName}`;
+            document.getElementById(
+              "businessChallengeTitle"
+            ).textContent = `The Challenge for "${companyName}"`;
+            document.getElementById("businessChallengeText").textContent =
+              bc.challengeText || "";
+            document.getElementById(
+              "businessChallengeOutcome"
+            ).innerHTML = `<strong>Desired Outcome:</strong> ${
+              bc.desiredOutcome || ""
+            }`;
+          }
+          if (data.part1.analogies && Array.isArray(data.part1.analogies)) {
+            // Assign directly - ensure IDs are unique if needed, or generate new ones
+            analogies = data.part1.analogies.map((a, index) => ({
+              ...a,
+              // Use provided ID or generate a time-based one
+              id: a.id || Date.now() + index,
+            }));
+            displayAnalogies(); // Refresh the display
+          } else {
+            displayAnalogies(); // Ensure the "no analogies" message shows if none are loaded
+          }
+        }
+
+        // 3. Populate Part 2: Themes
+        if (data.part2 && data.part2.facilitatorNotes) {
+          document.getElementById("themesInput").value =
+            data.part2.facilitatorNotes;
+        }
+
+        // 4. Populate Part 3: Debate
+        if (data.part3) {
+          document.getElementById("debateDirections").value =
+            data.part3.debateDirections || "";
+          document.getElementById("debateNotes").value =
+            data.part3.debateNotes || "";
+          document.getElementById("chosenStrategy").value =
+            data.part3.chosenStrategy || "";
+          // Trigger input event to update Part 4 if linked
+          document
+            .getElementById("chosenStrategy")
+            .dispatchEvent(new Event("input"));
+        }
+
+        // 5. Populate Part 4: Strategy Maps
+        if (
+          data.part4 &&
+          data.part4.strategyMaps &&
+          Array.isArray(data.part4.strategyMaps)
+        ) {
+          let currentMapId = 0; // Use local counter for loaded maps
+          strategyMaps = data.part4.strategyMaps.map((m) => {
+            currentMapId++;
+            return {
+              ...m,
+              // Generate consistent ID based on position + timestamp prefix
+              id: m.id || `loaded_${Date.now()}_${currentMapId}`,
+              feedback: m.feedback || [], // Ensure feedback array exists
+            };
+          });
+          // Set the main counter *after* processing loaded maps to avoid collision if user submits more
+          mapCounter = currentMapId > mapCounter ? currentMapId : mapCounter;
+
+          // Pre-fill the first map's details into the submission form for easy viewing/editing
+          if (strategyMaps.length > 0) {
+            const firstMap = strategyMaps[0];
+            document.getElementById("groupNameMap").value =
+              firstMap.groupName || "";
+            document.getElementById("mapStrategyDirection").value =
+              firstMap.direction ||
+              document.getElementById("chosenStrategy").value ||
+              ""; // Sync with Part 3 too
+            document.getElementById("mapOutcome").value =
+              firstMap.outcome || "";
+            document.getElementById("mapCustomerPerspective").value =
+              firstMap.customer || "";
+            document.getElementById("mapInternalProcesses").value =
+              firstMap.internal || "";
+            document.getElementById("mapLearningGrowth").value =
+              firstMap.learning || "";
+            document.getElementById("mapCausalLinks").value =
+              firstMap.logic || "";
+            if (firstMap.diagramCode) {
+              document.getElementById("mermaidCode").value =
+                firstMap.diagramCode;
+              // Update diagram preview in editor (use setTimeout to ensure textarea value is set)
+              setTimeout(updateDiagram, 50);
+            }
+          }
+          // Display all loaded maps in the list below the form
+          displayStrategyMaps();
+        } else {
+          displayStrategyMaps(); // Ensure "no maps" message shows if none are loaded
+        }
+
+        // 6. Populate Part 5: Reflections
+        if (data.part5 && data.part5.reflections) {
+          document.getElementById("reflectionInput").value =
+            data.part5.reflections;
+        }
+
+        // 7. Switch to the first tab and alert user
+        const firstTab = new bootstrap.Tab(
+          document.getElementById("part1-tab")
+        );
+        firstTab.show();
+        hideLoadingModal(); // Hide loading modal
+        // Use a brief timeout for the alert to ensure modal is gone
+        setTimeout(() => {
+          alert(`Example "${example.name}" loaded successfully!`);
+        }, 100);
       }
 
       // --- Initial setup ---
@@ -817,9 +2065,10 @@
         tab.addEventListener("shown.bs.tab", (event) => {
           const targetTabId = event.target.getAttribute("data-bs-target");
           if (targetTabId === "#part2") {
-            displayAnalogies(); // Refresh analogy list when Part 2 is shown
+            // No immediate refresh needed unless data changes while hidden
+            // displayAnalogies(); might cause flicker if unchanged
           } else if (targetTabId === "#part4") {
-            // Pre-fill chosen strategy if available
+            // Pre-fill chosen strategy if available and map field is empty
             const chosenStrategy =
               document.getElementById("chosenStrategy").value;
             const mapStrategyDirectionInput = document.getElementById(
@@ -828,19 +2077,41 @@
             if (
               mapStrategyDirectionInput &&
               chosenStrategy &&
-              !mapStrategyDirectionInput.value
+              !mapStrategyDirectionInput.value // Only fill if empty
             ) {
               mapStrategyDirectionInput.value = chosenStrategy;
             }
-            displayStrategyMaps(); // Refresh map list when Part 4 is shown
+            // Refresh strategy map list display in case feedback was added on another tab? Unlikely.
+            // displayStrategyMaps(); might cause flicker. Re-render diagrams only if necessary.
+            // Instead, ensure diagrams in the list are rendered correctly initially.
+            strategyMaps.forEach((map) => {
+              if (map.diagramCode) {
+                const nodeToRender = document.getElementById(
+                  `map-diagram-${map.id}`
+                );
+                // Re-run mermaid only if it looks like it hasn't been processed
+                if (
+                  nodeToRender &&
+                  !nodeToRender.hasAttribute("data-processed")
+                ) {
+                  console.log(
+                    "Re-rendering map diagram in list on tab switch: ",
+                    map.id
+                  );
+                  nodeToRender.removeAttribute("data-processed"); // Force reprocess if needed
+                  mermaid.run({ nodes: [nodeToRender] });
+                }
+              }
+            });
           }
-          // Add other refreshes if needed for other tabs
         });
       });
 
-      // Initial display call for any data that might be pre-loaded or persists if modified
+      // Initial display call for any data potentially loaded via example or persisted
       displayAnalogies();
       displayStrategyMaps();
+      // Load examples from JSON file when the page is ready
+      document.addEventListener("DOMContentLoaded", loadAndPopulateExamples);
     </script>
   </body>
 </html>
